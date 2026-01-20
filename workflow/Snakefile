@@ -1,0 +1,80 @@
+# load configuration
+# -----------------------------------------------------
+configfile: "config/config.yaml"
+
+# load rules
+# -----------------------------------------------------
+include: "rules/common.smk"
+include: "rules/process_reads.smk"
+
+# target rules
+# -----------------------------------------------------
+rule all:
+    input:
+        "results/multiqc/multiqc_report.html",
+    default_target: True
+
+rule prepare_snp_eff_database:
+	'''
+	rearranges genome fasta and genome gff files for snp_eff. Specifically:
+	1. makes a 'data' folder in the snpeff folder
+	2. makes a subfolder in 'data' with your desired genome name
+	3. copies your gff and genome files to the newly created genome folder and
+	renames your gff file as genes.gff and your genome as sequences.fa
+	4. Adds a line to the config file underneath the data.dir line and puts the
+	name of your genome folder plus .genome, followed by a description,
+	formatted like this: your_desired_name.genome : your_description
+	'''
+	input:
+		snp_eff_folder=config['snp_eff_folder'],
+		genome_fasta=config['genome_fasta'],
+		genome_gff=config['genome_gff']
+	params:
+		database=config['genome_database_name'],
+		description=config['database_description']
+	output:
+		genome_fasta=config['snp_eff_folder']+'/data/'+config['genome_database_name']+'/sequences.fa',
+		genome_gff=config['snp_eff_folder']+'/data/'+config['genome_database_name']+'/genes.gff',
+		temp_config=output_folder+'/snp_eff_folder/snpEff.config'
+	script:
+		'scripts/prepare_snp_eff_database.py'
+
+rule build_snp_eff:
+	input:
+		genome_fasta=config['snp_eff_folder']+'/data/'+config['genome_database_name']+'/sequences.fa',
+	params:
+		snp_eff_folder=config['snp_eff_folder'],
+		database_name=config['genome_database_name']
+	output:
+		snp_eff_database=config['snp_eff_folder']+'/data/'+config['genome_database_name']+'/sequence.bin'
+	shell:
+		'java -Xmx8g -jar {params.snp_eff_folder}/snpEff.jar build -c {params.snp_eff_folder}/snpEff.config -noCheckCds -noCheckProtein {params.database_name}'
+
+rule run_snp_eff:
+	input:
+		snp_eff_jar=config['snp_eff_folder']+'/snpEff.jar',
+		merged_vcf=output_folder+'/clair3_multisample/merged_multisample.vcf.gz',
+		snp_eff_database=config['snp_eff_folder']+'/data/'+config['genome_database_name']+'/sequence.bin'
+	params:
+		database_name=config['genome_database_name']
+	output:
+		snp_eff_stats=output_folder+'/snp_Eff_output/snpEff_summary.html',
+		snp_eff_vcf=output_folder+'/snp_Eff_output/annotated_variants.vcf'
+	shell:
+		'''
+		java -Xmx10g -jar {input.snp_eff_jar} {params.database_name} \
+		{input.merged_vcf} \
+		-stats {output.snp_eff_stats} >{output.snp_eff_vcf}
+		'''
+
+rule parse_snp_eff:
+	input:
+		snp_eff_vcf=output_folder+'/snp_Eff_output/annotated_variants.vcf',
+		genome_gff=config['genome_gff'],
+		targets_tsv=config['targets_tsv']
+	output:
+		coverage_AA=output_folder+'/AA_tables/coverage_AA_table.csv',
+		reference_AA=output_folder+'/AA_tables/reference_AA_table.csv',
+		alternate_AA=output_folder+'/AA_tables/alternate_AA_table.csv',
+	script:
+		'scripts/snpEff_parser.py'
