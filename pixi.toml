@@ -1,0 +1,12 @@
+[workspace]
+authors = ["Charlie Simkin <charlie.simkin@gmail.com>"]
+channels = ["conda-forge", "bioconda"]
+name = "snp_eff_annotation"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+snpeff = ">=5.4.0a,<6"
+snakemake = ">=9.15.0,<10"
