@@ -5,7 +5,9 @@ configfile: "config/config.yaml
 # -----------------------------------------------------
 rule all:
     input:
-        "results/multiqc/multiqc_report.html",
+		coverage_AA=f"{config['output_folder']}/AA_tables/coverage_AA_table.csv",
+		reference_AA=f"{config['output_folder']}/AA_tables/reference_AA_table.csv",
+		alternate_AA=f"{config['output_folder']}/AA_tables/alternate_AA_table.csv",
     default_target: True
 
 rule prepare_snp_eff_database:
