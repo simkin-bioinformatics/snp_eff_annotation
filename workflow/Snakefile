@@ -1,12 +1,6 @@
 # load configuration
 # -----------------------------------------------------
-configfile: "config/config.yaml"
-
-# load rules
-# -----------------------------------------------------
-include: "rules/common.smk"
-include: "rules/process_reads.smk"
-
+configfile: "config/config.yaml
 # target rules
 # -----------------------------------------------------
 rule all:
