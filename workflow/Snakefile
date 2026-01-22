@@ -1,6 +1,6 @@
 # load configuration
 # -----------------------------------------------------
-configfile: "config/config.yaml
+configfile: "config/config.yaml"
 # target rules
 # -----------------------------------------------------
 rule all:
