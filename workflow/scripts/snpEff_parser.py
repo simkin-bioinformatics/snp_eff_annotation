@@ -86,6 +86,8 @@ def make_targets_dict(targets_tsv, gene_mappings):
 	return targets_dict, targeted_mutations
 
 def extract_counts(labels, values):
+	if len(labels) != len(values):
+		values = "./."+":."*(len(labels) - 1)
 	labels=labels.split(':')
 	values=values.split(':')
 	for label_number, label in enumerate(labels):
