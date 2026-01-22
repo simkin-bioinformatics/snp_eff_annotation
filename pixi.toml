@@ -11,3 +11,4 @@ snakemake = "snakemake -c 8"
 [dependencies]
 snpeff = ">=5.4.0a,<6"
 snakemake = ">=9.15.0,<10"
+rsync = "*"
