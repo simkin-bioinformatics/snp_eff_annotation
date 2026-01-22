@@ -240,15 +240,24 @@ def fill_in_missing_values(protein_dict, targets_dict, targeted_depth_dict, targ
 	twice. Need a check to remove these 'targeted' counts and trust snpEff.
 	'''
 	snp_eff_muts=set(grab_mutation_names(protein_dict))
-	nonzero_muts=set(grab_mutation_names(targeted_depth_dict))
 	targeted_muts=set(targeted_mutations)
-	missing_muts=targeted_muts-(nonzero_muts|snp_eff_muts)
-	redundant_muts=nonzero_muts&snp_eff_muts
 	samples=protein_dict.keys()
-	zeroes_dict=make_zeroes_dict(samples, missing_muts)
-	new_nonzero=remove_redundant(redundant_muts, protein_dict, targeted_depth_dict)
-	merged_dict, sorting_list=merge_dicts(protein_dict, new_nonzero, zeroes_dict)
-	return merged_dict, sorting_list
+	if len(targeted_depth_dict) > 0:
+		nonzero_muts=set(grab_mutation_names(targeted_depth_dict))
+		missing_muts=targeted_muts-(nonzero_muts|snp_eff_muts)
+		redundant_muts=nonzero_muts&snp_eff_muts
+		new_nonzero=remove_redundant(redundant_muts, protein_dict, targeted_depth_dict)
+		zeroes_dict=make_zeroes_dict(samples, missing_muts)
+		merged_dict, sorted_list=merge_dicts(protein_dict, new_nonzero, zeroes_dict)
+	else:
+		first_sample=list(protein_dict.keys())[0]
+		sorting_list = []
+		merged_dict=protein_dict
+		for mut in merged_dict[first_sample]:
+			sorting_list.append((merged_dict[first_sample][mut][3], mut))
+		sorting_list=list(set(sorting_list))
+		sorted_list=special_sort(sorting_list)
+	return merged_dict, sorted_list
 
 def parse_vcf_file(input_vcf, targets_dict):
 	'''
