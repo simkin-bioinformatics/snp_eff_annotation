@@ -5,7 +5,7 @@ genome_gff: '/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfal
 
 # vcf file of variant called reads performed by either clair3 or gatk
 # -----------------------------------------------------------------------------------
-merged_vcf: /home/charlie/data/gatk4-illumina_test_data/test_output/cohort.vcf
+merged_vcf: /home/charlie/data/gatk4-illumina_test_data/gatk_snpeff_annotated_variants.vcf
 
 # Input folder containing the snpeff package
 # This can be found in the .pixi/envs/devault/share folder if you run "pixi install -a"
