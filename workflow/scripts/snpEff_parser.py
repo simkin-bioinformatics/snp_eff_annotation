@@ -206,7 +206,8 @@ def merge_dicts(eff_dict, nonzero_dict, zero_dict):
 	'''
 	first_sample=list(eff_dict.keys())[0]
 	max_eff=max(eff_dict[first_sample].keys())
-	max_nonzero=max(nonzero_dict[first_sample].keys())
+	if first_sample in nonzero_dict:
+		max_nonzero=max(nonzero_dict[first_sample].keys())
 	sorting_list=[]
 	for mut in eff_dict[first_sample]:
 		sorting_list.append((eff_dict[first_sample][mut][3], mut))
