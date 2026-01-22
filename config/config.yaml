@@ -1,17 +1,30 @@
-# fastq_folder: '/home/alfred/other_people/bnsengim/np_amp_clair3_demo_07-07-25/fastq'
+# Path to the genome and gff files
+# ------------------------------------------------------------------------------------
 genome_fasta: '/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta'
 genome_gff: '/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7.gff'
-output_folder: 'results'
-model_path: '/home/alfred/micromamba/envs/clair3/bin/models/r1041_e82_400bps_sup_v410'
+
+# vcf file of variant called reads performed by either clair3 or gatk
+# -----------------------------------------------------------------------------------
+merged_vcf: /home/charlie/data/gatk4-illumina_test_data/test_output/cohort.vcf
+
+# Input folder containing the snpeff package
+# This can be found in the .pixi/envs/devault/share folder if you run "pixi install -a"
+# ------------------------------------------------------------------------------------
 snp_eff_folder: '.pixi/envs/default/share/snpeff-5.4.0a-0'
-targets_tsv: 'config/targets.tsv'
 
 #name and description of a snpEff database to be built
+# ------------------------------------------------------------------------------------
 genome_database_name: 'plasmoDB_3D7_v62'
 database_description: 'A database for plasmoDB version 62'
 
-#filtering settings for clair3 - leave these alone for now
-snp_min_af: 0.000
-indel_min_af: 0.000
+# targets.tsv file containing mutations of particular interest
+# see the example in the config file for formatting requirements
+# ------------------------------------------------------------------------------------
+targets_tsv: 'config/targets.tsv'
 
-merged_vcf: /home/charlie/data/gatk4-illumina_test_data/test_output/cohort.vcf
+# Output folder where the results will go
+# ------------------------------------------------------------------------------------
+output_folder: 'results'
+
+
+
