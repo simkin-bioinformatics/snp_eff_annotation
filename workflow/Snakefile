@@ -2,18 +2,21 @@
 # -----------------------------------------------------
 configfile: "config/config.yaml"
 
+import os
+from pathlib import Path
+results = Path(config['output_directory'])
+
 # define variables
 # ------------------------------------------------
-snp_eff_copied = f"{config['output_folder']}/{os.path.basename(config['snp_eff_folder'])}"
+snp_eff_copied = results / Path(config['snp_eff_folder']).name
 
-import os
 rule all:
 	input:
-		coverage_AA=f"{config['output_folder']}/AA_tables/coverage_AA_table.csv",
-		reference_AA=f"{config['output_folder']}/AA_tables/reference_AA_table.csv",
-		alternate_AA=f"{config['output_folder']}/AA_tables/alternate_AA_table.csv",
-		config = f"{config['output_folder']}/config/config.yaml",
-		targets_tsv = f"{config['output_folder']}/config/{os.path.basename(config['targets_tsv'])}"
+		coverage_AA=results / "AA_tables" / "coverage_AA_table.csv",
+		reference_AA=results / "AA_tables" / "reference_AA_table.csv",
+		alternate_AA=results / "AA_tables" / "alternate_AA_table.csv",
+		config = results / "config" / "config.yaml",
+		targets_tsv = results / "config" / Path(config['targets_tsv']).name
 	default_target: True
 
 rule copy_config:
@@ -21,8 +24,8 @@ rule copy_config:
 		config = "config/config.yaml",
 		targets_tsv = config['targets_tsv']
 	output:
-		config = f"{config['output_folder']}/config/config.yaml",
-		targets_tsv = f"{config['output_folder']}/config/{os.path.basename(config['targets_tsv'])}"
+		config = f"{config['output_directory']}/config/config.yaml",
+		targets_tsv = f"{config['output_directory']}/config/{os.path.basename(config['targets_tsv'])}"
 	shell:
 		r"""
 		rsync -a {input.config} {output.config}
@@ -53,7 +56,7 @@ rule prepare_snp_eff_database:
 		snp_eff_config=f"{snp_eff_copied}/snpEff.config",
 		snp_eff_jar=f"{snp_eff_copied}/snpEff.jar"
 	run:
-		shell("rsync -a {input.snp_eff_folder} {config[output_folder]}/ --exclude '*.config'")
+		shell("rsync -a {input.snp_eff_folder} {config[output_directory]}/ --exclude '*.config'")
 		shell("rsync -a {input.genome_fasta} {output.genome_fasta}")
 		shell("rsync -a {input.genome_gff} {output.genome_gff}")
 		with open(f"{input.snp_eff_folder}/snpEff.config", "r") as in_file, open(output.snp_eff_config, "w") as out_file:
@@ -79,13 +82,13 @@ rule build_snp_eff:
 rule run_snp_eff:
 	input:
 		rules.build_snp_eff.output,
-		merged_vcf=config['merged_vcf'],
+		merged_vcf = config.get('merged_vcf', str(results / 'genotyped_cohort.vcf.gz')),
 	params:
 		database_name=config['genome_database_name'],
-		snp_eff_output_folder = f"{config['output_folder']}/snp_Eff_output"
+		snp_eff_output_directory = f"{config['output_directory']}/snp_Eff_output"
 	output:
-		snp_eff_stats=f"{config['output_folder']}/snp_Eff_output/snpEff_summary.html",
-		snp_eff_vcf=f"{config['output_folder']}/snp_Eff_output/annotated_variants.vcf"
+		snp_eff_stats=f"{config['output_directory']}/snp_Eff_output/snpEff_summary.html",
+		snp_eff_vcf=f"{config['output_directory']}/snp_Eff_output/annotated_variants.vcf"
 	shell:
 		'''
 		java -Xmx10g -jar {snp_eff_copied}/snpEff.jar \
@@ -95,13 +98,13 @@ rule run_snp_eff:
 
 rule parse_snp_eff:
 	input:
-		snp_eff_vcf=f"{config['output_folder']}/snp_Eff_output/annotated_variants.vcf",
+		snp_eff_vcf=f"{config['output_directory']}/snp_Eff_output/annotated_variants.vcf",
 		genome_gff=config['genome_gff'],
 		targets_tsv=config['targets_tsv']
 	output:
-		coverage_AA=f"{config['output_folder']}/AA_tables/coverage_AA_table.csv",
-		reference_AA=f"{config['output_folder']}/AA_tables/reference_AA_table.csv",
-		alternate_AA=f"{config['output_folder']}/AA_tables/alternate_AA_table.csv",
+		coverage_AA=f"{config['output_directory']}/AA_tables/coverage_AA_table.csv",
+		reference_AA=f"{config['output_directory']}/AA_tables/reference_AA_table.csv",
+		alternate_AA=f"{config['output_directory']}/AA_tables/alternate_AA_table.csv",
 	script:
 		'scripts/snpEff_parser_gemini_v3.py'
 		#'scripts/snpEff_parser.py'
