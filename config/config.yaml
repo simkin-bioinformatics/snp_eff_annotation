@@ -1,30 +1,27 @@
 # Path to the genome and gff files
 # ------------------------------------------------------------------------------------
-genome_fasta: '/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7_Genome.fasta'
-genome_gff: '/home/charlie/data/gatk4-illumina_test_data/genome/PlasmoDB-62_Pfalciparum3D7.gff'
+genome_fasta: "input_files/PlasmoDB-62_Pfalciparum3D7_Genome.fasta"
+genome_gff: "input_files/PlasmoDB-62_Pfalciparum3D7.gff"
 
 # vcf file of variant called reads performed by either clair3 or gatk
 # -----------------------------------------------------------------------------------
-merged_vcf: /home/charlie/data/gatk4-illumina_test_data/gatk_snpeff_annotated_variants.vcf
+merged_vcf: "input_files/genotyped_cohort.vcf.gz"
 
 # Input folder containing the snpeff package
 # This can be found in the .pixi/envs/devault/share folder if you run "pixi install -a"
 # ------------------------------------------------------------------------------------
-snp_eff_folder: '.pixi/envs/default/share/snpeff-5.4.0a-0'
+snp_eff_folder: ".pixi/envs/default/share/snpeff-5.4.0a-0"
 
 #name and description of a snpEff database to be built
 # ------------------------------------------------------------------------------------
-genome_database_name: 'plasmoDB_3D7_v62'
-database_description: 'A database for plasmoDB version 62'
+genome_database_name: "plasmoDB_3D7_v62"
+database_description: "A database for plasmoDB version 62"
 
 # targets.tsv file containing mutations of particular interest
 # see the example in the config file for formatting requirements
 # ------------------------------------------------------------------------------------
-targets_tsv: 'config/targets.tsv'
+targets_tsv: "config/targets.tsv"
 
 # Output folder where the results will go
 # ------------------------------------------------------------------------------------
-output_folder: 'results'
-
-
-
+output_folder: "results"

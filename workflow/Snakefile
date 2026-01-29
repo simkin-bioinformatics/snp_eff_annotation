@@ -13,7 +13,7 @@ rule all:
 		reference_AA=f"{config['output_folder']}/AA_tables/reference_AA_table.csv",
 		alternate_AA=f"{config['output_folder']}/AA_tables/alternate_AA_table.csv",
 		config = f"{config['output_folder']}/config/config.yaml",
-		targets_tsv = f"{config['output_folder']}/config/{os.path.basename(config['targets_tsv'])}"	
+		targets_tsv = f"{config['output_folder']}/config/{os.path.basename(config['targets_tsv'])}"
 	default_target: True
 
 rule copy_config:
@@ -103,4 +103,5 @@ rule parse_snp_eff:
 		reference_AA=f"{config['output_folder']}/AA_tables/reference_AA_table.csv",
 		alternate_AA=f"{config['output_folder']}/AA_tables/alternate_AA_table.csv",
 	script:
-		'scripts/snpEff_parser.py'
+		'scripts/snpEff_parser_gemini_v3.py'
+		#'scripts/snpEff_parser.py'
