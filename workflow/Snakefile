@@ -8,7 +8,7 @@ results = Path(config['output_directory'])
 
 # define variables
 # ------------------------------------------------
-snp_eff_copied = results / Path(config['snp_eff_folder']).name
+snp_eff_copied = results / "temp" / Path(config['snp_eff_folder']).name
 
 rule all:
 	input:
