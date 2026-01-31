@@ -50,13 +50,14 @@ rule prepare_snp_eff_database:
 	params:
 		database=config['genome_database_name'],
 		description=config['database_description'],
+		temp_folder = rusults / "temp",
 	output:
 		genome_fasta=f"{snp_eff_copied}/data/{config['genome_database_name']}/sequences.fa",
 		genome_gff=f"{snp_eff_copied}/data/{config['genome_database_name']}/genes.gff",
 		snp_eff_config=f"{snp_eff_copied}/snpEff.config",
 		snp_eff_jar=f"{snp_eff_copied}/snpEff.jar"
 	run:
-		shell("rsync -a {input.snp_eff_folder} {config[output_directory]}/ --exclude '*.config'")
+		shell("rsync -a {input.snp_eff_folder} {params.temp_folder}/ --exclude '*.config'")
 		shell("rsync -a {input.genome_fasta} {output.genome_fasta}")
 		shell("rsync -a {input.genome_gff} {output.genome_gff}")
 		with open(f"{input.snp_eff_folder}/snpEff.config", "r") as in_file, open(output.snp_eff_config, "w") as out_file:
