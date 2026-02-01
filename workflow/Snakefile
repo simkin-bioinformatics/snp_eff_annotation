@@ -2,110 +2,109 @@
 # -----------------------------------------------------
 configfile: "config/config.yaml"
 
-import os
 from pathlib import Path
-results = Path(config['output_directory'])
 
 # define variables
 # ------------------------------------------------
-snp_eff_copied = results / "temp" / Path(config['snp_eff_folder']).name
+results = Path(config['output_directory'])
 
+# rules
+# ----------------------------------------------------
 rule all:
-	input:
-		coverage_AA=results / "AA_tables" / "coverage_AA_table.csv",
-		reference_AA=results / "AA_tables" / "reference_AA_table.csv",
-		alternate_AA=results / "AA_tables" / "alternate_AA_table.csv",
-		config = results / "config" / "config.yaml",
-		targets_tsv = results / "config" / Path(config['targets_tsv']).name
-	default_target: True
+    input:
+        copied_config = results / "config" / "config.yaml",
+        copied_targets_tsv = results / "config" / Path(config['targets_tsv']).name,
+        coverage_AA = results / "AA_tables" / "coverage_AA_table.csv",
+        reference_AA = results / "AA_tables" / "reference_AA_table.csv",
+        alternate_AA = results / "AA_tables" / "alternate_AA_table.csv",
+    default_target: True
 
 rule copy_config:
-	input:
-		config = "config/config.yaml",
-		targets_tsv = config['targets_tsv']
-	output:
-		config = f"{config['output_directory']}/config/config.yaml",
-		targets_tsv = f"{config['output_directory']}/config/{os.path.basename(config['targets_tsv'])}"
-	shell:
-		r"""
-		rsync -a {input.config} {output.config}
-		rsync -a {input.targets_tsv} {output.targets_tsv}
-		"""
+    input:
+        config = "config/config.yaml",
+        targets_tsv = config['targets_tsv']
+    output:
+        copied_config = results / "config" / "config.yaml",
+        copied_targets_tsv = results / "config" / Path(config['targets_tsv']).name
+    shell:
+        """
+        rsync -a {input.config} {output.copied_config}
+        rsync -a {input.targets_tsv} {output.copied_targets_tsv}
+        """
 
 rule prepare_snp_eff_database:
-	'''
-	rearranges genome fasta and genome gff files for snp_eff. Specifically:
-	1. makes a 'data' folder in the snpeff folder
-	2. makes a subfolder in 'data' with your desired genome name
-	3. copies your gff and genome files to the newly created genome folder and
-	renames your gff file as genes.gff and your genome as sequences.fa
-	4. Adds a line to the config file underneath the data.dir line and puts the
-	name of your genome folder plus .genome, followed by a description,
-	formatted like this: your_desired_name.genome : your_description
-	'''
-	input:
-		snp_eff_folder=config['snp_eff_folder'],
-		genome_fasta=config['genome_fasta'],
-		genome_gff=config['genome_gff']
-	params:
-		database=config['genome_database_name'],
-		description=config['database_description'],
-		temp_folder = results / "temp",
-	output:
-		genome_fasta=f"{snp_eff_copied}/data/{config['genome_database_name']}/sequences.fa",
-		genome_gff=f"{snp_eff_copied}/data/{config['genome_database_name']}/genes.gff",
-		snp_eff_config=f"{snp_eff_copied}/snpEff.config",
-		snp_eff_jar=f"{snp_eff_copied}/snpEff.jar"
-	run:
-		shell("rsync -a {input.snp_eff_folder} {params.temp_folder}/ --exclude '*.config'")
-		shell("rsync -a {input.genome_fasta} {output.genome_fasta}")
-		shell("rsync -a {input.genome_gff} {output.genome_gff}")
-		with open(f"{input.snp_eff_folder}/snpEff.config", "r") as in_file, open(output.snp_eff_config, "w") as out_file:
-			for line in in_file:
-				out_file.write(line)
-				if "data.dir = " in line:
-					out_file.write(f"{params.database}.genome : {params.description}\n\n")
+    '''
+    rearranges genome fasta and genome gff files for snp_eff. Specifically:
+    1. makes a 'data' folder in the snpeff folder
+    2. makes a subfolder in 'data' with your desired genome name
+    3. copies your gff and genome files to the newly created genome folder and
+    renames your gff file as genes.gff and your genome as sequences.fa
+    4. Adds a line to the config file underneath the data.dir line and puts the
+    name of your genome folder plus .genome, followed by a description,
+    formatted like this: your_desired_name.genome : your_description
+    '''
+    input:
+        snp_eff_config = Path("config") / ".snpEff_config_template.txt",
+        genome_fasta = config['genome_fasta'],
+        genome_gff = config['genome_gff']
+    params:
+        database = config['genome_database_name'],
+        description = config['database_description'],
+    output:
+        snp_eff_config = results / "snpEff_processing" / "snpEff.config",
+        genome_fasta = results / "snpEff_processing" / "data" / config['genome_database_name'] / "sequences.fa",
+        genome_gff = results / "snpEff_processing" / "data" / config['genome_database_name'] / "genes.gff",
+    run:
+        shell("rsync -a {input.genome_fasta} {output.genome_fasta}")
+        shell("rsync -a {input.genome_gff} {output.genome_gff}")
+        with open(input.snp_eff_config, "r") as infile, open(output.snp_eff_config, "w") as outfile:
+            for line in infile:
+                outfile.write(line)
+                if "data.dir = " in line:
+                    outfile.write(f"{params.database}.genome : {params.description}\n\n")
 
 rule build_snp_eff:
-	input:
-		genome_fasta=rules.prepare_snp_eff_database.output,
-	output:
-		snp_eff_database=f"{snp_eff_copied}/data/{config['genome_database_name']}/sequence.bin"
-	shell:
-		r'''
-		java -Xmx8g -jar \
-			{snp_eff_copied}/snpEff.jar build \
-			-c {snp_eff_copied}/snpEff.config \
-			-noCheckCds -noCheckProtein \
-			{config[genome_database_name]}
-		'''
+    input:
+        snp_eff_config = results / "snpEff_processing" / "snpEff.config",
+        genome_fasta = results / "snpEff_processing" / "data" / config['genome_database_name'] / "sequences.fa",
+        genome_gff = results / "snpEff_processing" / "data" / config['genome_database_name'] / "genes.gff",
+    output:
+        snp_eff_database = results / "snpEff_processing"/ "data" / config['genome_database_name'] / "sequence.bin",
+    shell:
+        r'''
+        pixi run snpeff build \
+            -c {input.snp_eff_config} \
+            -noCheckCds -noCheckProtein \
+            {config[genome_database_name]}
+        '''
 
 rule run_snp_eff:
-	input:
-		rules.build_snp_eff.output,
-		merged_vcf = config.get('merged_vcf', str(results / 'genotyped_cohort.vcf.gz')),
-	params:
-		database_name=config['genome_database_name'],
-		snp_eff_output_directory = f"{config['output_directory']}/snp_Eff_output"
-	output:
-		snp_eff_stats=f"{config['output_directory']}/snp_Eff_output/snpEff_summary.html",
-		snp_eff_vcf=f"{config['output_directory']}/snp_Eff_output/annotated_variants.vcf"
-	shell:
-		'''
-		java -Xmx10g -jar {snp_eff_copied}/snpEff.jar \
-		{params.database_name} {input.merged_vcf} \
-		-stats {output.snp_eff_stats} >{output.snp_eff_vcf}
-		'''
+    input:
+        snp_eff_config = results / "snpEff_processing" / "snpEff.config",
+        snp_eff_database = results / "snpEff_processing"/ "data" / config['genome_database_name'] / "sequence.bin",
+        merged_vcf = config.get('merged_vcf','externally_defined'),
+    params:
+        database_name=config['genome_database_name'],
+    output:
+        snp_eff_stats = results / "snpEff_output" / "snpEf_summary.html",
+        snp_eff_vcf = results / "snpEff_output" / "annotated_variants.vcf",
+    shell:
+        '''
+        pixi run snpeff -c {input.snp_eff_config} \
+        {params.database_name} {input.merged_vcf} \
+        -stats {output.snp_eff_stats} >{output.snp_eff_vcf}
+        '''
 
 rule parse_snp_eff:
-	input:
-		snp_eff_vcf=f"{config['output_directory']}/snp_Eff_output/annotated_variants.vcf",
-		genome_gff=config['genome_gff'],
-		targets_tsv=config['targets_tsv']
-	output:
-		coverage_AA=f"{config['output_directory']}/AA_tables/coverage_AA_table.csv",
-		reference_AA=f"{config['output_directory']}/AA_tables/reference_AA_table.csv",
-		alternate_AA=f"{config['output_directory']}/AA_tables/alternate_AA_table.csv",
-	script:
-		'scripts/snpEff_parser_gemini_v3.py'
-		#'scripts/snpEff_parser.py'
+    input:
+        snp_eff_config = results / "snpEff_processing" / "snpEff.config",
+        snp_eff_vcf = results / "snpEff_output" / "annotated_variants.vcf",
+        snp_eff_stats = results / "snpEff_output" / "snpEf_summary.html",
+        genome_gff = config['genome_gff'],
+        targets_tsv = config['targets_tsv']
+    output:
+        coverage_AA = results / "AA_tables" / "coverage_AA_table.csv",
+        reference_AA = results / "AA_tables" / "reference_AA_table.csv",
+        alternate_AA = results / "AA_tables" / "alternate_AA_table.csv",
+    script:
+        'scripts/snpEff_parser_gemini_v3.py'
