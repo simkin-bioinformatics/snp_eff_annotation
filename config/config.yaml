@@ -1,16 +1,11 @@
 # Path to the genome and gff files
 # ------------------------------------------------------------------------------------
-genome_fasta: /home/charlie/gatk4-illumina/resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
-genome_gff: /home/charlie/gatk4-illumina/resources/PlasmoDB-62_Pfalciparum3D7.gff
+genome_fasta: resources/PlasmoDB-62_Pfalciparum3D7_Genome.fasta
+genome_gff: resources/PlasmoDB-62_Pfalciparum3D7.gff
 
 # vcf file of variant called reads performed by either clair3 or gatk
 # -----------------------------------------------------------------------------------
-merged_vcf: /home/charlie/gatk4-illumina/results/cherrypicked/genotyped_cohort.vcf.gz
-
-# Input folder containing the snpeff package
-# This can be found in the .pixi/envs/devault/share folder if you run "pixi install -a"
-# ------------------------------------------------------------------------------------
-snp_eff_folder: ".pixi/envs/default/share/snpeff-5.4.0a-0"
+merged_vcf: resources/genotyped_cohort.vcf.gz
 
 #name and description of a snpEff database to be built
 # ------------------------------------------------------------------------------------
