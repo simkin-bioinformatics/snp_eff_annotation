@@ -44,7 +44,7 @@ rule prepare_snp_eff_database:
     formatted like this: your_desired_name.genome : your_description
     '''
     input:
-        snp_eff_config = Path("config") / ".snpEff_config_template.txt",
+        snp_eff_config = str([path for path in Path(".pixi").rglob("snpEff.config")][0]),
         genome_fasta = config['genome_fasta'],
         genome_gff = config['genome_gff']
     params:
