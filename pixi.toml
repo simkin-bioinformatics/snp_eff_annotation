@@ -2,13 +2,19 @@
 authors = ["Charlie Simkin <charlie.simkin@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
 name = "snp_eff_annotation"
-platforms = ["linux-64"]
+platforms = ["linux-64", "osx-arm64"]
 version = "0.1.0"
 
 [tasks]
 snakemake = "snakemake -c 8"
 
 [dependencies]
-snpeff = ">=5.4.0a,<6"
-snakemake = ">=9.15.0,<10"
-rsync = "*"
+snakemake = ">=9.16.2,<10"
+rsync = ">=3.4.1,<4"
+
+[feature.snpeff]
+dependencies = {snpeff = ">=5.4.0a,<6"}
+tasks = {snpeff = "snpeff"}
+
+[environments]
+snpeff = {features = ['snpeff'], no-default-feature = true}
