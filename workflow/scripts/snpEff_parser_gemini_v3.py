@@ -34,7 +34,7 @@ def get_depths(format_string, sample_string, alt_index=1):
 	return ref, alt
 
 
-def parse_ann_field(info_field):
+def parse_ann_field(info_field, gene_map):
 	"""
 	Takes a single VCF annotation line (aka variant call) as input.
 	Parses the snpEff ANN field from the INFO column. Returns a list of
@@ -55,9 +55,10 @@ def parse_ann_field(info_field):
 				aa_change=fields[10]
 			parsed_effects.append(
 				{"alt_allele": fields[0], "exonic_func": fields[1],
-				"gene_id": fields[4], "gene_name": fields[3],
+				"gene_id": fields[4], "gene_name": gene_map.get(fields[3], fields[3]),
 				"aa_change": aa_change
 				})
+			
 	#print('after parsing, SNPEff list is', parsed_effects)
 	return parsed_effects
 
@@ -78,7 +79,8 @@ def load_gene_mappings(gff_path):
 		elif line[0].startswith("ID="):
 			ID = line[0][3:]
 			name = ID
-			gene_mappings[ID] = name
+			if ID not in gene_mappings:
+				gene_mappings[ID] = name
 	return gene_mappings
 
 
@@ -257,7 +259,7 @@ def parse_vcf_file(vcf_in, observed_mutations, gene_map, targets):
 			chrom, pos, vcf_ref, vcf_alts = (
 				cols[0], cols[1], cols[3], cols[4].split(","),
 				)
-			ann_data = parse_ann_field(cols[7])
+			ann_data = parse_ann_field(cols[7], gene_map)
 			format_str = cols[8]
 
 			# Step 1: Process every annotation in the VCF (found mutations)
