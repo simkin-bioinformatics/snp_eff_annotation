@@ -106,5 +106,6 @@ rule parse_snp_eff:
         coverage_AA = results / "AA_tables" / "coverage_AA_table.csv",
         reference_AA = results / "AA_tables" / "reference_AA_table.csv",
         alternate_AA = results / "AA_tables" / "alternate_AA_table.csv",
+        other_AA = results / "AA_tables" / "other_AA_table.csv"
     script:
-        'scripts/snpEff_parser_gemini_v3.py'
+        'scripts/snpEff_parser_gemini_v4.py'

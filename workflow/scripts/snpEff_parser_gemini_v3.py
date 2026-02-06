@@ -43,7 +43,6 @@ def parse_ann_field(info_field, gene_map):
 	"""
 	if "ANN=" not in info_field:
 		return []
-
 	ann_part = [f for f in info_field.split(";") if f.startswith("ANN=")][0][4:]
 	parsed_effects = []
 	for effect in ann_part.split(","):
@@ -154,10 +153,8 @@ def parse_annotations(ann_data, vcf_alts, observed_mutations, samples, sample_da
 	for ann in ann_data:
 		if not ann["aa_change"]:
 			continue
-
 		mut_name = f"{ann['gene_name']}-{ann['aa_change']}"
 		vcf_alt_idx = vcf_alts.index(ann["alt_allele"]) + 1
-
 		# Update metadata if not already a target (prioritize snpEff info)
 		if mut_name not in observed_mutations:
 			observed_mutations[mut_name] = {
@@ -217,6 +214,7 @@ def special_sort(unsorted_list):
 	# Sort by Gene (index 0) then Position (index 1)
 	# Returns only the original mutation string (index 2)
 	return [item[2] for item in sorted(sorting_list)]
+
 def write_output(cov_path, ref_path, alt_path, observed_mutations, sorted_mut_names, samples, sample_data):
 	output_files = {"cov": open(cov_path, "w"), "ref": open(ref_path, "w"),
 	"alt": open(alt_path, "w")}
