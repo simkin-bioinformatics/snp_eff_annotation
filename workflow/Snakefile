@@ -72,7 +72,7 @@ rule build_snp_eff:
         snp_eff_database = results / "snpEff_processing"/ "data" / config['genome_database_name'] / "sequence.bin",
     shell:
         r'''
-        pixi run snpeff build \
+        pixi run snpEff build \
             -c {input.snp_eff_config} \
             -noCheckCds -noCheckProtein \
             {config[genome_database_name]}
@@ -90,7 +90,7 @@ rule run_snp_eff:
         snp_eff_vcf = results / "snpEff_output" / "annotated_variants.vcf",
     shell:
         '''
-        pixi run snpeff -c {input.snp_eff_config} \
+        pixi run snpEff -c {input.snp_eff_config} \
         {params.database_name} {input.merged_vcf} \
         -stats {output.snp_eff_stats} >{output.snp_eff_vcf}
         '''
